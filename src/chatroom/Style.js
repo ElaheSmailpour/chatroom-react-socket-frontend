@@ -10,18 +10,89 @@ export default makeStyles(theme => ({
     background: "#DDE",
     height: '5rem',
   },
-  middle: {
-    background:"white",
-    height: '20rem',
-    overflowY:"auto"
-  },
-  footer: {
-    background:"grey",
-    height: 'max-content'
-  },
-  headerText:{
+  headerText: {
     fontSize: '2.5rem',
     marginRight: '1rem',
+  },
+  middle: {
+    background: "white",
+    height: '20rem',
+    overflowY: 'auto'
+  },
+  messageParent: {
+    marginTop: '1rem',
+  },
+  message_reverse: {
+    flexDirection: "row-reverse"
+  },
+  message: {
+    border: "1px solid #ebebeb",
+    borderRadius: '2rem',
+    backgroundColor: 'white',
+    padding: '1rem 1.5rem'
+  },
+  sender: {
+    color: "#aaa",
+    fontSize: "0.8rem",
+    marginBottom: "0.5rem"
+  },
+  date: {
+    color: "#aaa",
+    fontSize: "0.8rem",
+    marginTop: "0.5rem"
+  },
+  messageMe: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    position: "relative",
+    background: "#ebebeb",
+    borderRadius: ".4em",
+    "&:after": {
+      "content": "''",
+      "position": "absolute",
+      "right": "0",
+      "top": "50%",
+      "width": "0",
+      "height": "0",
+      "border": "20px solid transparent",
+      "borderLeftColor": "#ebebeb",
+      "borderRight": "0",
+      "borderBottom": "0",
+      "marginTop": "-10px",
+      "marginRight": "-20px"
+    }
+  },
+  messageHe: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    position: "relative",
+    background: "#ebebeb",
+    borderRadius: ".4em",
+    '&:after': {
+      "content": "''",
+      "position": "absolute",
+      "left": "0",
+      "top": "50%",
+      "width": "0",
+      "height": "0",
+      "border": "20px solid transparent",
+      "borderRightColor": "#ebebeb",
+      "borderLeft": "0",
+      "borderBottom": "0",
+      "marginTop": "-10px",
+      "marginLeft": "-20px"
+    }
+  },
+  avatar: {
+    width: "4rem",
+    borderRadius: "50%",
+    marginLeft: '1rem'
+  },
+  footer: {
+    background: "#DDE",
+    height: 'max-content'
   },
   input: {
     flex: "1",
@@ -31,23 +102,12 @@ export default makeStyles(theme => ({
     padding: "1rem",
     border: "2px solid #cacaca",
     borderRadius: "1rem",
-    height: "3rem",
+    height: "4rem",
   },
-  btnsend:{
-    margin:"1rem"
-  },
-  avatar:{
-    width: '4rem',
-   borderRaduis:"50%",
-   marginleft: "1rem"
-  },
-  messageParent:{
-    marginTop:"1rem"
-  },
-  message:{
-    border: "1px solid #ebebeb",
-    borderRadius: '2rem',
-    backgroundColor: 'white',
-    padding: '1rem 1.5rem'
+  btnSend: {
+    margin: "1rem",
+  }, deleteBtn: {
+    width: '1rem',
+    height: '1rem'
   }
 }))
