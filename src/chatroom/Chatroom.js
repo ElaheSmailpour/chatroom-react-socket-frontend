@@ -71,7 +71,7 @@ const Chatroom = (props) => {
           <Grid container direction={"column"}>
             <Grid item className={classes.header} container alignItems={"center"} justify={"center"}>
               <Typography className={classes.headerText}>
-                چت روم
+                chatroom
               </Typography>
             </Grid>
             <Grid item className={classes.middle} direction={"column"} ref={scrollableGrid}>
