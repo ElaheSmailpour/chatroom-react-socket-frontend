@@ -15,7 +15,11 @@ const Chatroom = (props) => {
     const scrollableGrid = useRef();
     const [messages, setMessages] = React.useState([]);
     const [newMessage, setNewMessage] = React.useState([]);
-    const socket = React.useRef(SocketIOClient.connect("http://localhost:3010/socket"));
+    const socket = React.useRef();
+
+    useEffect(()=>{
+      socket.current = SocketIOClient.connect("http://localhost:3010/socket");
+    },[])
    useEffect(() => {
       console.log("render use effect", props.location.state);
       socket.current.on("newMessage", (message) => {
@@ -24,22 +28,28 @@ const Chatroom = (props) => {
         scrollableGrid.current.scroll(0, scrollableGrid.current.scrollHeight);
       })
       socket.current.on("deleteMsg", id => {
-        setMessages(function (messages) {
-          let findIndex = -1;
-          messages.forEach((message, index) => {
-            if (message.id === id) {
-              findIndex = index;
-            }
-          });
-          return removeItemWithSlice(messages, findIndex);
-        });
+        setMessages(lastMessages=>lastMessages.filter(item=>item.id!==id))
+        // const newMessages  = [...messages];
+        // const index =newMessage.findIndex(item=>item.id===id)
+        // if(index!==-1)
+        //   newMessages.splice(index,1)
+        //   setMessages(newMessage)
+        // setMessages(function (messages) {
+        //   let findIndex = -1;
+        //   messages.forEach((message, index) => {
+        //     if (message.id === id) {
+        //       findIndex = index;
+        //     }
+        //   });
+        //   return removeItemWithSlice(messages, findIndex);
+        // });
       })
     }, []);
   
-    const removeItemWithSlice = (items, index) => {
-      if (index === -1) return items;
-      return [...items.slice(0, index), ...items.slice(index + 1)];
-    };
+    // const removeItemWithSlice = (items, index) => {
+    //   if (index === -1) return items;
+    //   return [...items.slice(0, index), ...items.slice(index + 1)];
+    // };
   
     const sendMessage = () => {
       if (!newMessage)

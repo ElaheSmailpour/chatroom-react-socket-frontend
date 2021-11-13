@@ -8,7 +8,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import useStyle from './Style'
 import classNames from 'classnames';
-
+import Axios from "axios"
 
 const LoginApp = (props) => {
 
@@ -27,16 +27,27 @@ const LoginApp = (props) => {
   }
   const submit = () => {
     console.log(name, gender);
-    const error = validation({name, gender});
+    const error = validation({ name, gender });
     if (error)
       return alert(error);
-    props.history.push({
-      pathname: "chatroom",
-      state: {
-        name,
-        gender,
-      }
-    });
+    Axios.post("http://localhost:3010/login", {
+      username: name,
+      gender,
+
+    }).then(res => {
+      props.history.push({
+        pathname: "chatroom",
+        state: {
+          name,
+          gender,
+        }
+      });
+    }).catch(err => {
+      console.log("err=", err)
+      alert("error login!")
+    })
+
+
   }
 
   const classes = useStyle();
@@ -44,8 +55,8 @@ const LoginApp = (props) => {
     <Grid container direction={"column"}>
       <Grid item>
         <Typography className={classes.headerText}>
-            Chatroom
-           </Typography>
+          Chatroom
+        </Typography>
       </Grid>
       <Grid item container justify={"center"} alignItems={"center"} spacing={2}>
         <Grid item>
@@ -53,11 +64,11 @@ const LoginApp = (props) => {
         </Grid>
         <Grid item>
           <TextField id="outlined-basic" variant="outlined"
-                     value={name} onChange={e => setName(e.target.value)}/>
+            value={name} onChange={e => setName(e.target.value)} />
         </Grid>
       </Grid>
       <Grid item container justify={"center"} alignItems={"center"}
-            spacing={2} style={{marginTop: '2rem'}}>
+        spacing={2} style={{ marginTop: '2rem' }}>
         <Grid item>
           <label className={classes.label}>Gender:</label>
         </Grid>
@@ -81,7 +92,7 @@ const LoginApp = (props) => {
       </Grid>
       <Grid item container justify={"center"}>
         <Button variant="contained" color="primary" className={classes.button} onClick={submit}>
-         Login
+          Login
         </Button>
       </Grid>
     </Grid>
