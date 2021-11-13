@@ -24,7 +24,7 @@ const Chatroom = (props) => {
   }, [])
   useEffect(() => {
     axios.get("http://localhost:3010/getUsers").then((res) => {
-      setUsers(res.data.filter(item=>item.username!==props.location.state.name))
+      setUsers(res.data.filter(item => item.username !== props.location.state.name))
     }).catch((err) => {
       alert("error getUsers")
     })
@@ -38,7 +38,7 @@ const Chatroom = (props) => {
     })
     socket.current.on("deleteMsg", id => {
       setMessages(lastMessages => lastMessages.filter(item => item.id !== id))
-     
+
       // setMessages(function (messages) {
       //   let findIndex = -1;
       //   messages.forEach((message, index) => {
@@ -79,8 +79,12 @@ const Chatroom = (props) => {
   const onDeleteClick = (id) => {
     socket.current.emit("deleteMsg", id);
   };
-  const joinChatWithUser=()=>{
-    
+  const joinChatWithUser = (username) => {
+    setMessages([])
+    if(user)
+    socket.current.emit("leftChat", {username:user,myUsername:props.location.state.name})
+    setUsers(username)
+    socket.current.emit("joinChat", {username,myUsername:props.location.state.name})
   }
 
   return (
@@ -88,7 +92,7 @@ const Chatroom = (props) => {
       <Paper className={classes.paper}>
         <Grid container direction={"column"}>
           <Grid item container>
-            {users.map(user => <div  className={classes.userItem}>{user.username} onClick={()=>joinChatWithUser(user.username)}</div>)}
+            {users.map(user => <div className={classes.userItem}>{user.username} onClick={() => joinChatWithUser(user.username)}</div>)}
           </Grid>
         </Grid>
         <Grid container direction={"column"}>
