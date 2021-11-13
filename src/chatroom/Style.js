@@ -109,5 +109,13 @@ export default makeStyles(theme => ({
   }, deleteBtn: {
     width: '1rem',
     height: '1rem'
+  },
+  userItem:{
+    background:"green",
+    padding:"1rem 1rem",
+    fontSize:"1.5rem",
+    borderRadius:"1rem",
+    margin:"0.5rem 0.5rem",
+    coloe:"white"
   }
 }))
