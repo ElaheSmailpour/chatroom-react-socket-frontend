@@ -116,6 +116,10 @@ export default makeStyles(theme => ({
     fontSize:"1.5rem",
     borderRadius:"1rem",
     margin:"0.5rem 0.5rem",
-    coloe:"white"
+    coloe:"white",
+    border:"5px solid transparent"
+  },
+  userItemActive:{
+    border:"5px solid aqua"
   }
 }))

@@ -10,13 +10,16 @@ import IconButton from "@material-ui/core/IconButton";
 import SendIcon from '@material-ui/icons/Send';
 import classNames from 'classnames';
 import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
 import axios from 'axios';
 const Chatroom = (props) => {
   const classes = useStyle();
   const scrollableGrid = useRef();
   const [users, setUsers] = useState([]);
+  const [user, setUser] = useState("");
+  const [messageForEdit, setMessageForEdit] = useState();
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
   const socket = useRef();
 
   useEffect(() => {
@@ -39,34 +42,52 @@ const Chatroom = (props) => {
     socket.current.on("deleteMsg", id => {
       setMessages(lastMessages => lastMessages.filter(item => item.id !== id))
 
-      // setMessages(function (messages) {
-      //   let findIndex = -1;
-      //   messages.forEach((message, index) => {
-      //     if (message.id === id) {
-      //       findIndex = index;
-      //     }
-      //   });
-      //   return removeItemWithSlice(messages, findIndex);
-      // });
+
+    })
+    socket.current.on("editMessage", ({ msg, id }) => {
+      setMessages(messages => {
+        console.log("messages", messages)
+        const message = messages.find(item => {
+
+          return item.id === id
+        })
+        if (message)
+          message.msg = msg;
+        return messages
+      })
+
     })
   }, []);
 
-  // const removeItemWithSlice = (items, index) => {
-  //   if (index === -1) return items;
-  //   return [...items.slice(0, index), ...items.slice(index + 1)];
-  // };
+
+
+
 
   const sendMessage = () => {
     if (!newMessage)
       return;
-    socket.current.emit("newMessage", {
-      id: "",
-      msg: newMessage,
-      sender: {
-        name: props.location.state.name,
-        gender: props.location.state.gender,
-      },
-    });
+    if (messageForEdit) {
+      socket.current.emit("editMessage", {
+        id: messageForEdit,
+        msg: newMessage,
+        sender: props.location.state.name,
+        receiver: user
+
+      });
+      setMessageForEdit(undefined)
+    }
+    else
+      socket.current.emit("newMessage", {
+        id: "",
+        msg: newMessage,
+        sender: {
+          name: props.location.state.name,
+          gender: props.location.state.gender,
+        },
+        receiver: {
+          name: user
+        }
+      });
     setNewMessage("");
   }
 
@@ -79,26 +100,41 @@ const Chatroom = (props) => {
   const onDeleteClick = (id) => {
     socket.current.emit("deleteMsg", id);
   };
-  const joinChatWithUser = (username) => {
-    setMessages([])
-    if(user)
-    socket.current.emit("leftChat", {username:user,myUsername:props.location.state.name})
-    setUsers(username)
-    socket.current.emit("joinChat", {username,myUsername:props.location.state.name})
-  }
 
+  const onEditClick = (id, msg) => {
+    setNewMessage(msg)
+    setMessageForEdit(id)
+  };
+
+
+  const joinChatWithUser = (username) => {
+    setMessages([]);
+    if (user)
+      socket.current.emit('leftChat', {
+        username: user,
+        myUsername: props.location.state.name,
+      });
+    setUser(username);
+    socket.current.emit('joinChat', {
+      username,
+      myUsername: props.location.state.name,
+    });
+  };
+  const sendFile = () => {
+
+  }
   return (
     <div>
       <Paper className={classes.paper}>
         <Grid container direction={"column"}>
           <Grid item container>
-            {users.map(user => <div className={classes.userItem}>{user.username} onClick={() => joinChatWithUser(user.username)}</div>)}
+            {users.map(userItem => <div onClick={() => joinChatWithUser(userItem.username)} className={classNames(classes.userItem, userItem.username === user && classes.userItemActive)}>{userItem.username}</div>)}
           </Grid>
         </Grid>
         <Grid container direction={"column"}>
           <Grid item className={classes.header} container alignItems={"center"} justify={"center"}>
             <Typography className={classes.headerText}>
-              chatroom
+              {`chat with ${user} `}
             </Typography>
           </Grid>
           <Grid item className={classes.middle} direction={"column"} ref={scrollableGrid}>
@@ -128,9 +164,14 @@ const Chatroom = (props) => {
                         </Typography>
                         {
                           message.sender.name === props.location.state.name &&
-                          <IconButton style={{ marginRight: '1rem', }} onClick={() => onDeleteClick(message.id)}>
-                            <DeleteIcon className={classes.deleteBtn} />
-                          </IconButton>
+                          <>
+                            <IconButton style={{ marginRight: '1rem', }} onClick={() => onDeleteClick(message.id)}>
+                              <DeleteIcon className={classes.deleteBtn} />
+                            </IconButton>
+                            <IconButton style={{ marginRight: '1rem', }} onClick={() => onEditClick(message.id, message.msg)}>
+                              <EditIcon className={classes.editBtn} />
+                            </IconButton>
+                          </>
                         }
                       </div>
                     </div>
@@ -145,8 +186,13 @@ const Chatroom = (props) => {
                 className={classes.input} onKeyDown={_handleKeyDown} />
             </Grid>
             <Grid item>
-              <IconButton className={classes.btnSend} onClick={sendMessage}>
-                <SendIcon />
+              <IconButton className={classes.btnSend} onClick={sendMessage} >
+              
+              <SendIcon />
+              </IconButton>
+              <IconButton className={classes.btnfile} >
+              <input type="file"  onChange={sendFile}/>
+               
               </IconButton>
             </Grid>
           </Grid>
