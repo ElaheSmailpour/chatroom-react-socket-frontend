@@ -11,7 +11,15 @@ import SendIcon from '@material-ui/icons/Send';
 import classNames from 'classnames';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+
+import {
+  AttachFileRounded,
+ 
+  MicRounded as MicIcon,
+} from '@material-ui/icons';
+
 import axios from 'axios';
+import { ReactMic } from 'react-mic';
 const Chatroom = (props) => {
   const classes = useStyle();
   const scrollableGrid = useRef();
@@ -20,6 +28,7 @@ const Chatroom = (props) => {
   const [messageForEdit, setMessageForEdit] = useState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [record, setRecord] = React.useState(false);
   const socket = useRef();
 
   useEffect(() => {
@@ -120,9 +129,21 @@ const Chatroom = (props) => {
       myUsername: props.location.state.name,
     });
   };
-  const sendFile = () => {
+const startRecordVoice=()=>{
+if(record)
+  setRecord(false)
+else 
+setRecord(true)
 
-  }
+}
+  const onData = (recordedBlob) => {
+  console.log('chunk of real-time data is: ', recordedBlob);
+  };
+
+  const onStop = (recordedBlob) => {
+    console.log('recordedBlob is: ', recordedBlob);
+    
+  };
   return (
     <div>
       <Paper className={classes.paper}>
@@ -181,6 +202,14 @@ const Chatroom = (props) => {
             }
           </Grid>
           <Grid item className={classes.footer} container justify={'center'} alignItems={"center"}>
+          <Grid item>
+              <IconButton
+                className={classes.btnSend}
+                onClick={startRecordVoice}
+              >
+                <MicIcon style={{ color: record ? 'green' : 'initial' }} />
+              </IconButton>
+            </Grid>
             <Grid item xs>
               <InputBase value={newMessage} onChange={e => setNewMessage(e.target.value)}
                 className={classes.input} onKeyDown={_handleKeyDown} />
@@ -190,14 +219,19 @@ const Chatroom = (props) => {
               
               <SendIcon />
               </IconButton>
-              <IconButton className={classes.btnfile} >
-              <input type="file"  onChange={sendFile}/>
-               
-              </IconButton>
+             
             </Grid>
           </Grid>
         </Grid>
       </Paper>
+      <ReactMic
+        record={record}
+        className={classes.soundWave}
+        onStop={onStop}
+        onData={onData}
+        strokeColor="#000000"
+        backgroundColor="#FF4081"
+      />
     </div>
   );
 };

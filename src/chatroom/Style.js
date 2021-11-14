@@ -121,5 +121,8 @@ export default makeStyles(theme => ({
   },
   userItemActive:{
     border:"5px solid aqua"
+  },
+  soundWave:{
+    display:"none"
   }
 }))
