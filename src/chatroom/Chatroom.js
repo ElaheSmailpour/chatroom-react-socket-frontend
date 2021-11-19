@@ -14,7 +14,7 @@ import EditIcon from '@material-ui/icons/Edit';
 
 import {
   AttachFileRounded,
- 
+
   MicRounded as MicIcon,
 } from '@material-ui/icons';
 
@@ -30,7 +30,11 @@ const Chatroom = (props) => {
   const [newMessage, setNewMessage] = useState("");
   const [record, setRecord] = React.useState(false);
   const socket = useRef();
+  const userRef = useRef();
 
+  useEffect(() => {
+    userRef.current=user;
+  }, [user])
   useEffect(() => {
     socket.current = SocketIOClient.connect("http://localhost:3010/socket");
   }, [])
@@ -129,21 +133,39 @@ const Chatroom = (props) => {
       myUsername: props.location.state.name,
     });
   };
-const startRecordVoice=()=>{
-if(record)
-  setRecord(false)
-else 
-setRecord(true)
+  const startRecordVoice = () => {
+    if (record)
+      setRecord(false)
+    else
+      setRecord(true)
 
-}
+  }
   const onData = (recordedBlob) => {
-  console.log('chunk of real-time data is: ', recordedBlob);
+    console.log('chunk of real-time data is: ', recordedBlob);
   };
 
   const onStop = (recordedBlob) => {
+   
     console.log('recordedBlob is: ', recordedBlob);
-    
-  };
+    const formData = new FormData();
+    formData.append('voiceMessage', recordedBlob.blob);
+    axios.post("http://localhost:3010/uploadVoice", formData).then((res) => {
+      socket.current.emit("uploadVoice", {
+        path: res.data.filePath,
+        sender: {
+          name: props.location.state.name,
+          gender: props.location.state.gender,
+        },
+        receiver: {
+          name: userRef.current
+        }
+      })
+      alert(" voice send successfully")
+    }).catch((err) => {
+      console.log("errorVoice:", err)
+      alert(" voice send  not successfully")
+    })
+  }
   return (
     <div>
       <Paper className={classes.paper}>
@@ -176,9 +198,14 @@ setRecord(true)
                       <Typography className={classes.sender}>
                         {message.sender.name}
                       </Typography>
-                      <Typography>
-                        {message.msg}
-                      </Typography>
+
+                      {message.type === "voice" ? <audio controls>
+                        <source src={message.path} type={"audio/mpeg"} />
+                      </audio> :
+                        <Typography>
+                          {message.msg}
+                        </Typography>
+                      }
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Typography className={classes.date}>
                           {message.date.split("T")[1].split(".")[0]}
@@ -202,7 +229,7 @@ setRecord(true)
             }
           </Grid>
           <Grid item className={classes.footer} container justify={'center'} alignItems={"center"}>
-          <Grid item>
+            <Grid item>
               <IconButton
                 className={classes.btnSend}
                 onClick={startRecordVoice}
@@ -216,10 +243,10 @@ setRecord(true)
             </Grid>
             <Grid item>
               <IconButton className={classes.btnSend} onClick={sendMessage} >
-              
-              <SendIcon />
+
+                <SendIcon />
               </IconButton>
-             
+
             </Grid>
           </Grid>
         </Grid>
