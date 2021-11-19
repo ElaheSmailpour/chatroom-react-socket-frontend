@@ -20,6 +20,26 @@ import {
 
 import axios from 'axios';
 import { ReactMic } from 'react-mic';
+const MessageBody = ({ message, classes }) => {
+  if (message.type === 'voice')
+    return (
+      <audio controls>
+        <source src={message.path} type={'audio/mpeg'} />
+      </audio>
+    );
+  if (message.type === 'file')
+    return (
+      <div>
+        <a target={'_blank'} href={message.path} className={classes.attachLink}>
+          <Typography>
+            {message.path.substring(message.path.lastIndexOf('-') + 1)}
+          </Typography>
+          <AttachFileRounded className={classes.attachIcon} />
+        </a>
+      </div>
+    );
+  else return <Typography>{message.msg}</Typography>;
+};
 const Chatroom = (props) => {
   const classes = useStyle();
   const scrollableGrid = useRef();
@@ -28,12 +48,13 @@ const Chatroom = (props) => {
   const [messageForEdit, setMessageForEdit] = useState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [record, setRecord] = React.useState(false);
+  const [record, setRecord] = useState(false);
+  const [attachment, setAttachment] = useState()
   const socket = useRef();
   const userRef = useRef();
-
+  const inputFileRef = useRef()
   useEffect(() => {
-    userRef.current=user;
+    userRef.current = user;
   }, [user])
   useEffect(() => {
     socket.current = SocketIOClient.connect("http://localhost:3010/socket");
@@ -145,7 +166,7 @@ const Chatroom = (props) => {
   };
 
   const onStop = (recordedBlob) => {
-   
+
     console.log('recordedBlob is: ', recordedBlob);
     const formData = new FormData();
     formData.append('voiceMessage', recordedBlob.blob);
@@ -165,6 +186,33 @@ const Chatroom = (props) => {
       console.log("errorVoice:", err)
       alert(" voice send  not successfully")
     })
+  }
+  const onChangeFile = (e) => {
+    const files = e.target.files
+    if (files && files.length > 0)
+      setAttachment(files[0])
+    const data = new FormData();
+    data.append("file", files[0])
+    axios.post("http://localhost:3010/uploadFile", data).then((res) => {
+      const filePath = res.data.filePath
+      socket.current.emit("uploadFile", {
+        path: filePath,
+        sender: {
+          name: props.location.state.name,
+          gender: props.location.state.gender,
+        },
+        receiver: {
+          name: userRef.current
+        }
+      })
+      alert(" AttachFile send successfully")
+    }).catch((err) => {
+      console.log("errorAttachFile:", err)
+      alert(" AttachFile send  not successfully")
+    })
+  }
+  const attachFile = () => {
+    inputFileRef.current.click()
   }
   return (
     <div>
@@ -198,14 +246,8 @@ const Chatroom = (props) => {
                       <Typography className={classes.sender}>
                         {message.sender.name}
                       </Typography>
+                      <MessageBody message={message} classes={classes} />
 
-                      {message.type === "voice" ? <audio controls>
-                        <source src={message.path} type={"audio/mpeg"} />
-                      </audio> :
-                        <Typography>
-                          {message.msg}
-                        </Typography>
-                      }
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Typography className={classes.date}>
                           {message.date.split("T")[1].split(".")[0]}
@@ -218,6 +260,10 @@ const Chatroom = (props) => {
                             </IconButton>
                             <IconButton style={{ marginRight: '1rem', }} onClick={() => onEditClick(message.id, message.msg)}>
                               <EditIcon className={classes.editBtn} />
+                            </IconButton>
+                            <IconButton style={{ marginRight: '1rem', }}>
+                              <AttachFileRounded className={classes.attachBtn} onClick={attachFile} />
+                              <input ref={inputFileRef} type="file" style={{ display: "none" }} onChange={onChangeFile} />
                             </IconButton>
                           </>
                         }
