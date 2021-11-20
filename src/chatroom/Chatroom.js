@@ -50,8 +50,12 @@ const Chatroom = (props) => {
   const [newMessage, setNewMessage] = useState("");
   const [record, setRecord] = useState(false);
   const [attachment, setAttachment] = useState()
+  const [isTyping, setIsTyping] = useState()
+  
+  const [isTypingReceiver, setIsTypingReceiver] = useState();
   const socket = useRef();
   const userRef = useRef();
+  const isTypingTimeoutId = useRef();
   const inputFileRef = useRef()
   useEffect(() => {
     userRef.current = user;
@@ -91,11 +95,38 @@ const Chatroom = (props) => {
       })
 
     })
+    socket.current.on('isTyping', ({ username, isTyping }) => {
+ 
+      if (props.location.state.name !== username) {
+        console.log('user : ' + username + ' isTyping:' + isTyping);
+        setIsTypingReceiver(isTyping);
+      }
+    
+    }, []);
   }, []);
 
 
 
 
+
+const handleChangeMessage = (e) => {
+  setNewMessage(e.target.value);
+  if (!isTyping) setIsTyping(true);
+  if (isTypingTimeoutId.current) clearTimeout(isTypingTimeoutId.current);
+  isTypingTimeoutId.current = setTimeout(() => {
+    setIsTyping(false);
+  }, 2000);
+};
+
+
+useEffect(()=>{
+  console.log('change isTyping:', isTyping);
+  socket.current.emit('isTyping', {
+    sender: props.location.state.name,
+    receiver: user,
+    isTyping,
+  });
+},[isTyping])
 
   const sendMessage = () => {
     if (!newMessage)
@@ -214,6 +245,9 @@ const Chatroom = (props) => {
   const attachFile = () => {
     inputFileRef.current.click()
   }
+  
+
+  
   return (
     <div>
       <Paper className={classes.paper}>
@@ -225,7 +259,8 @@ const Chatroom = (props) => {
         <Grid container direction={"column"}>
           <Grid item className={classes.header} container alignItems={"center"} justify={"center"}>
             <Typography className={classes.headerText}>
-              {`chat with ${user} `}
+            
+              {`chat with ${user} ${isTypingReceiver ? '(Typing...)' : ''}`}
             </Typography>
           </Grid>
           <Grid item className={classes.middle} direction={"column"} ref={scrollableGrid}>
@@ -284,7 +319,7 @@ const Chatroom = (props) => {
               </IconButton>
             </Grid>
             <Grid item xs>
-              <InputBase value={newMessage} onChange={e => setNewMessage(e.target.value)}
+              <InputBase value={newMessage} onChange={handleChangeMessage}
                 className={classes.input} onKeyDown={_handleKeyDown} />
             </Grid>
             <Grid item>
