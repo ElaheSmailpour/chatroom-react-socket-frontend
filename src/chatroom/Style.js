@@ -110,19 +110,34 @@ export default makeStyles(theme => ({
     width: '1rem',
     height: '1rem'
   },
-  userItem:{
-    background:"green",
-    padding:"1rem 1rem",
-    fontSize:"1.5rem",
-    borderRadius:"1rem",
-    margin:"0.5rem 0.5rem",
-    coloe:"white",
-    border:"5px solid transparent"
+  userItem: {
+    padding: '1rem 1.5rem',
+    fontSize: '1.5rem',
+    backgroundColor: "#1ABC9C",
+    color: "white",
+    borderRadius: '1rem',
+    border: "5px solid transparent",
+    margin: "0.5rem 0.5rem "
   },
-  userItemActive:{
-    border:"5px solid aqua"
+  userItemActive: {
+    border: "5px solid #0A9C7C"
   },
-  soundWave:{
-    display:"none"
+  soundWave: {
+    display: "none"
+  },
+  attachIcon: {
+    padding: "0.5rem",
+    width: "3rem",
+    height: "3rem",
+    backgroundColor: "#16A085",
+    color: "white",
+    borderRadius: "15%",
+    marginRight:'1rem'
+  },
+  attachLink: {
+    display: "flex",
+    color: "unset",
+    textDecoration: "none",
+    alignItems: "center"
   }
 }))

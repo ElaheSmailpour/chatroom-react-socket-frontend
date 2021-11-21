@@ -128,9 +128,6 @@ const Chatroom = (props) => {
   }, []);
 
 
-
-
-
   const handleChangeMessage = (e) => {
     setNewMessage(e.target.value);
     if (!isTyping) setIsTyping(true);
