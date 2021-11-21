@@ -12,6 +12,8 @@ import classNames from 'classnames';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 
+import { Done as SentIcon, DoneAll as SeenIcon } from '@material-ui/icons';
+
 import {
   AttachFileRounded,
 
@@ -51,7 +53,7 @@ const Chatroom = (props) => {
   const [record, setRecord] = useState(false);
   const [attachment, setAttachment] = useState()
   const [isTyping, setIsTyping] = useState()
-  
+
   const [isTypingReceiver, setIsTypingReceiver] = useState();
   const socket = useRef();
   const userRef = useRef();
@@ -70,13 +72,20 @@ const Chatroom = (props) => {
       alert("error getUsers")
     })
   }, [])
+
   useEffect(() => {
-    console.log("render use effect", props.location.state);
-    socket.current.on("newMessage", (message) => {
+    console.log('render use effect', props.location.state);
+    socket.current.on('newMessage', (message) => {
       console.log(message);
-      setMessages(messages => messages.concat(message));
+      setMessages((messages) => messages.concat(message));
       scrollableGrid.current.scroll(0, scrollableGrid.current.scrollHeight);
-    })
+      if (message.sender.name !== props.location.state.name)
+        socket.current.emit('seenMessage', {
+          id: message.id,
+          sender: props.location.state.name,
+          receiver: userRef.current,
+        });
+    });
     socket.current.on("deleteMsg", id => {
       setMessages(lastMessages => lastMessages.filter(item => item.id !== id))
 
@@ -95,13 +104,26 @@ const Chatroom = (props) => {
       })
 
     })
+    socket.current.on('seenMessage', (id) => {
+      setMessages((messages) => {
+        const index = messages.findIndex((item) => item.id == id);
+        console.log(id, index);
+        if (index !== -1) {
+          return [
+            ...messages.slice(0, index),
+            { ...messages[index], seen: true },
+            ...messages.slice(index + 1),
+          ];
+        } else return messages;
+      });
+    });
     socket.current.on('isTyping', ({ username, isTyping }) => {
- 
+
       if (props.location.state.name !== username) {
         console.log('user : ' + username + ' isTyping:' + isTyping);
         setIsTypingReceiver(isTyping);
       }
-    
+
     }, []);
   }, []);
 
@@ -109,24 +131,24 @@ const Chatroom = (props) => {
 
 
 
-const handleChangeMessage = (e) => {
-  setNewMessage(e.target.value);
-  if (!isTyping) setIsTyping(true);
-  if (isTypingTimeoutId.current) clearTimeout(isTypingTimeoutId.current);
-  isTypingTimeoutId.current = setTimeout(() => {
-    setIsTyping(false);
-  }, 2000);
-};
+  const handleChangeMessage = (e) => {
+    setNewMessage(e.target.value);
+    if (!isTyping) setIsTyping(true);
+    if (isTypingTimeoutId.current) clearTimeout(isTypingTimeoutId.current);
+    isTypingTimeoutId.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
+  };
 
 
-useEffect(()=>{
-  console.log('change isTyping:', isTyping);
-  socket.current.emit('isTyping', {
-    sender: props.location.state.name,
-    receiver: user,
-    isTyping,
-  });
-},[isTyping])
+  useEffect(() => {
+    console.log('change isTyping:', isTyping);
+    socket.current.emit('isTyping', {
+      sender: props.location.state.name,
+      receiver: user,
+      isTyping,
+    });
+  }, [isTyping])
 
   const sendMessage = () => {
     if (!newMessage)
@@ -245,9 +267,9 @@ useEffect(()=>{
   const attachFile = () => {
     inputFileRef.current.click()
   }
-  
 
-  
+
+
   return (
     <div>
       <Paper className={classes.paper}>
@@ -259,7 +281,7 @@ useEffect(()=>{
         <Grid container direction={"column"}>
           <Grid item className={classes.header} container alignItems={"center"} justify={"center"}>
             <Typography className={classes.headerText}>
-            
+
               {`chat with ${user} ${isTypingReceiver ? '(Typing...)' : ''}`}
             </Typography>
           </Grid>
@@ -284,6 +306,13 @@ useEffect(()=>{
                       <MessageBody message={message} classes={classes} />
 
                       <div style={{ display: 'flex', alignItems: 'center' }}>
+
+                        {message.sender.name === props.location.state.name &&
+                          (message.seen ? (
+                            <SeenIcon style={{ marginLeft: '0.5rem' }} />
+                          ) : (
+                            <SentIcon style={{ marginLeft: '0.5rem' }} />
+                          ))}
                         <Typography className={classes.date}>
                           {message.date.split("T")[1].split(".")[0]}
                         </Typography>
