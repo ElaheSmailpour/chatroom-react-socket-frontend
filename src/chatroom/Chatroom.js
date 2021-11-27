@@ -53,10 +53,10 @@ const Chatroom = (props) => {
   const [newMessage, setNewMessage] = useState("");
   const [record, setRecord] = useState(false);
   const [attachment, setAttachment] = useState()
-  const [isTyping, setIsTyping] = useState()
 
+  const [isTyping, setIsTyping] = useState()
   const [isTypingReceiver, setIsTypingReceiver] = useState();
- 
+
   const socket = useRef();
   const userRef = useRef();
   const isTypingTimeoutId = useRef();
@@ -74,13 +74,25 @@ const Chatroom = (props) => {
       alert("error getUsers")
     })
   }, [])
+  
+  useEffect(() => {
+    if (!user)
+    
+      return;
+    
+    axios.get(`http://localhost:3010/getMessages/${props.location.state.name}/${user}`).then((res) => {
 
+     setMessages(res.data.map(message => ({id : message._id,msg : message.message,sender : {name : message.sender,gender  : message.gender},receiver : {name : message.receiver}})))
+    }).catch((err) => {
+      alert("error getMessages")
+    })
+  }, [user])
   useEffect(() => {
     console.log('render use effect', props.location.state);
     socket.current.on('newMessage', (message) => {
       console.log(message);
       setMessages((messages) => messages.concat(message));
-      scrollableGrid.current.scroll(0, scrollableGrid.current.scrollHeight);
+      scrollableGrid.current?.scroll(0, scrollableGrid.current?.scrollHeight);
       if (message.sender.name !== props.location.state.name)
         socket.current.emit('seenMessage', {
           id: message.id,
@@ -119,6 +131,7 @@ const Chatroom = (props) => {
         } else return messages;
       });
     });
+
     socket.current.on('isTyping', ({ username, isTyping }) => {
 
       if (props.location.state.name !== username) {
@@ -126,28 +139,48 @@ const Chatroom = (props) => {
         setIsTypingReceiver(isTyping);
       }
 
-    }, []);
+
+    });
+
+    socket.current.on('leftChat', (username) => {
+
+      if (props.location.state.name !== username) {
+        
+      alert(username + "not online")
+      }
+
+
+    }, );
   }, []);
+
 
 
   const handleChangeMessage = (e) => {
     setNewMessage(e.target.value);
+
     if (!isTyping) setIsTyping(true);
-    if (isTypingTimeoutId.current) clearTimeout(isTypingTimeoutId.current);
+    if (isTypingTimeoutId.current)
+      clearTimeout(isTypingTimeoutId.current);
     isTypingTimeoutId.current = setTimeout(() => {
       setIsTyping(false);
     }, 2000);
   };
-
-
   useEffect(() => {
-    console.log('change isTyping:', isTyping);
-    socket.current.emit('isTyping', {
+    socket.current.emit("isTyping", {
       sender: props.location.state.name,
       receiver: user,
-      isTyping,
-    });
+      isTyping
+    })
   }, [isTyping])
+
+  // useEffect(() => {
+  //   console.log('change isTyping:', isTyping);
+  //   socket.current.emit('isTyping', {
+  //     sender: props.location.state.name,
+  //     receiver: user,
+  //     isTyping,
+  //   });
+  // }, [isTyping])
 
   const sendMessage = () => {
     if (!newMessage)
@@ -270,8 +303,8 @@ const Chatroom = (props) => {
 
 
   const onEmojiClick = (event, emojiObject) => {
- 
-    setNewMessage(newMessage +  emojiObject.emoji)
+
+    setNewMessage(newMessage + emojiObject.emoji)
   };
   return (
     <div>
@@ -317,7 +350,7 @@ const Chatroom = (props) => {
                             <SentIcon style={{ marginLeft: '0.5rem' }} />
                           ))}
                         <Typography className={classes.date}>
-                          {message.date.split("T")[1].split(".")[0]}
+                          {message.date && message.date.split("T")[1].split(".")[0]}
                         </Typography>
                         {
                           message.sender.name === props.location.state.name &&
@@ -342,15 +375,15 @@ const Chatroom = (props) => {
             }
           </Grid>
           <Grid item className={classes.footer} container justifyContent={'center'} alignItems={"center"}>
-            <Grid item   className={classes.emogiHover}>
-            <IconButton
+            <Grid item className={classes.emogiHover}>
+              <IconButton
                 className={classes.btnSend}
-                
+
               >
-        <EmojiEmotionsIcon/>
-        </IconButton>
-            <Picker onEmojiClick={onEmojiClick} /> 
-              </Grid>
+                <EmojiEmotionsIcon />
+              </IconButton>
+              <Picker onEmojiClick={onEmojiClick} />
+            </Grid>
             <Grid item>
               <IconButton
                 className={classes.btnSend}
