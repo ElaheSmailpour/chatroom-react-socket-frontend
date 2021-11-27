@@ -139,5 +139,12 @@ export default makeStyles(theme => ({
     color: "unset",
     textDecoration: "none",
     alignItems: "center"
-  }
+  },
+  emogiHover:{
+    position:"relative",
+    "&:hover  .emoji-picker-react":{
+      display : "flex !important"
+    }
+  },
+
 }))

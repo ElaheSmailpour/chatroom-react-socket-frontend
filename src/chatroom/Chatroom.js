@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import SocketIOClient from 'socket.io-client'
 import { useEffect, useState } from 'react';
@@ -11,9 +12,9 @@ import SendIcon from '@material-ui/icons/Send';
 import classNames from 'classnames';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
-
+import Picker from 'emoji-picker-react';
 import { Done as SentIcon, DoneAll as SeenIcon } from '@material-ui/icons';
-
+import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
 import {
   AttachFileRounded,
 
@@ -55,6 +56,7 @@ const Chatroom = (props) => {
   const [isTyping, setIsTyping] = useState()
 
   const [isTypingReceiver, setIsTypingReceiver] = useState();
+ 
   const socket = useRef();
   const userRef = useRef();
   const isTypingTimeoutId = useRef();
@@ -267,6 +269,10 @@ const Chatroom = (props) => {
 
 
 
+  const onEmojiClick = (event, emojiObject) => {
+ 
+    setNewMessage(newMessage +  emojiObject.emoji)
+  };
   return (
     <div>
       <Paper className={classes.paper}>
@@ -276,7 +282,7 @@ const Chatroom = (props) => {
           </Grid>
         </Grid>
         <Grid container direction={"column"}>
-          <Grid item className={classes.header} container alignItems={"center"} justify={"center"}>
+          <Grid item className={classes.header} container alignItems={"center"} justifyContent={"center"}>
             <Typography className={classes.headerText}>
 
               {`chat with ${user} ${isTypingReceiver ? '(Typing...)' : ''}`}
@@ -335,7 +341,16 @@ const Chatroom = (props) => {
               })
             }
           </Grid>
-          <Grid item className={classes.footer} container justify={'center'} alignItems={"center"}>
+          <Grid item className={classes.footer} container justifyContent={'center'} alignItems={"center"}>
+            <Grid item   className={classes.emogiHover}>
+            <IconButton
+                className={classes.btnSend}
+                
+              >
+        <EmojiEmotionsIcon/>
+        </IconButton>
+            <Picker onEmojiClick={onEmojiClick} /> 
+              </Grid>
             <Grid item>
               <IconButton
                 className={classes.btnSend}
